@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="陈肆肆的钱包">
+  <meta name="theme-color" content="#FFDEE3">
+  <meta name="description" content="一款可爱又实用的个人记账工具">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <title>陈肆肆的钱包</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <header class="app-header">
+      <div class="app-header__title"><span class="emoji">🌿</span>陈肆肆的钱包</div>
+      <div class="app-header__actions">
+        <button class="icon-btn" id="btnImport" title="导入数据">📥</button>
+        <button class="icon-btn" id="btnExport" title="导出备份">📤</button>
+      </div>
+    </header>
+    <div class="main-content">
+      <div class="view active" id="view-dashboard"></div>
+      <div class="view" id="view-calendar"></div>
+      <div class="view" id="view-add"></div>
+      <div class="view" id="view-transactions"></div>
+    </div>
+    <button class="fab" id="fab" aria-label="添加记录">+</button>
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-nav="dashboard">
+        <span class="nav-icon">🏠</span><span class="nav-label">首页</span>
+      </button>
+      <button class="nav-item" data-nav="calendar">
+        <span class="nav-icon">📅</span><span class="nav-label">日历</span>
+      </button>
+      <button class="nav-item" data-nav="transactions">
+        <span class="nav-icon">📋</span><span class="nav-label">账单</span>
+      </button>
+    </nav>
+  </div>
+  <script src="js/db.js"></script>
+  <script src="js/calendar.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
