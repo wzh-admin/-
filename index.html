@@ -1,0 +1,517 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="小荷包">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23FFB7C5'/><stop offset='100%25' stop-color='%23C9A7EB'/></linearGradient></defs><rect width='180' height='180' rx='36' fill='url(%23g)'/><text x='90' y='115' text-anchor='middle' font-size='80'>🐷</text></svg>">
+<link rel="manifest" href="manifest.json">
+<title>小荷包 · 可爱记账</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --pink:#FF7AA5;--pink-lt:#FFF0F4;--purple:#C9A7EB;--purple-lt:#F5EDFC;
+  --blue:#8ECAE6;--blue-lt:#F0F8FC;--mint:#95D5B2;--mint-lt:#F2FBF5;
+  --peach:#FFB7A5;--peach-lt:#FFF5F2;--yellow:#FFE0A0;
+  --bg:#FFFBF5;--card:#FFFFFF;--text:#4A3B4E;--text2:#9B8DA3;
+  --border:#F0E8F2;--shadow:0 2px 16px rgba(180,140,180,.10);
+  --radius:18px;--radius-sm:12px;
+  --safe-bottom:env(safe-area-inset-bottom,16px);
+  --tab-h:68px;
+}
+html{scroll-behavior:smooth;-webkit-tap-highlight-color:transparent}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Rounded","Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.5;font-size:15px;
+  max-width:480px;margin:0 auto;min-height:100vh;
+  padding-bottom:calc(var(--tab-h) + var(--safe-bottom));
+  -webkit-font-smoothing:antialiased;user-select:none;
+}
+.header{
+  position:sticky;top:0;z-index:50;background:linear-gradient(135deg,#FFD1DC,#F8E8FF);
+  padding:12px 20px;padding-top:max(12px,env(safe-area-inset-top,0px));
+  text-align:center;box-shadow:0 1px 12px rgba(180,140,180,.1);
+}
+.header h1{font-size:20px;font-weight:700;color:var(--text);letter-spacing:1px}
+.header .sub{font-size:12px;color:var(--text2);margin-top:2px}
+
+/* ── Tab Bar ── */
+.tabs{
+  position:fixed;bottom:0;left:0;right:0;z-index:50;
+  background:var(--card);border-top:1px solid var(--border);
+  display:flex;justify-content:space-around;align-items:center;
+  height:var(--tab-h);padding-bottom:var(--safe-bottom);
+  max-width:480px;margin:0 auto;
+}
+.tab{
+  flex:1;text-align:center;padding:8px 0;cursor:pointer;
+  color:var(--text2);font-size:11px;transition:all .2s;
+}
+.tab.active{color:var(--pink)}
+.tab .icon{font-size:24px;display:block;margin-bottom:2px}
+
+/* ── Pages ── */
+.page{display:none;padding:16px;animation:in .25s ease}
+.page.active{display:block}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Balance Card ── */
+.balance-card{
+  background:linear-gradient(135deg,#FFB7C5,#C9A7EB);border-radius:var(--radius);
+  padding:20px 24px;margin-bottom:16px;color:#fff;box-shadow:0 4px 24px rgba(200,140,180,.25);
+}
+.balance-card .label{font-size:12px;opacity:.85;margin-bottom:4px}
+.balance-card .amount{font-size:36px;font-weight:800;letter-spacing:1px}
+.balance-card .row{display:flex;gap:24px;margin-top:12px}
+.balance-card .row .item{flex:1}
+.balance-card .row .val{font-size:16px;font-weight:700}
+.balance-card .row .lbl{font-size:11px;opacity:.7}
+
+/* ── Form ── */
+.form-section{background:var(--card);border-radius:var(--radius);padding:16px 18px;margin-bottom:16px;box-shadow:var(--shadow)}
+.form-section h3{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text);display:flex;align-items:center;gap:6px}
+.form-row{display:flex;gap:10px;margin-bottom:10px;align-items:center}
+.form-row label{font-size:13px;color:var(--text2);white-space:nowrap;min-width:36px}
+.form-row input,.form-row select{
+  flex:1;border:2px solid var(--border);border-radius:var(--radius-sm);
+  padding:10px 12px;font-size:15px;color:var(--text);background:#FAFAFA;
+  outline:none;transition:border .2s;font-family:inherit;
+}
+.form-row input:focus,.form-row select:focus{border-color:var(--pink)}
+.type-toggle{display:flex;gap:0;background:var(--border);border-radius:var(--radius-sm);padding:3px}
+.type-btn{flex:1;text-align:center;padding:8px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
+.type-btn.exp{color:var(--text2)}
+.type-btn.inc{color:var(--text2)}
+.type-btn.exp.active{background:linear-gradient(135deg,#FF7AA5,#FF9CBA);color:#fff}
+.type-btn.inc.active{background:linear-gradient(135deg,#95D5B2,#8ECAE6);color:#fff}
+
+/* ── Category Grid ── */
+.cat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.cat-item{
+  text-align:center;padding:8px 4px;border-radius:var(--radius-sm);
+  cursor:pointer;border:2px solid transparent;transition:all .2s;font-size:12px;
+}
+.cat-item:hover{background:var(--pink-lt)}
+.cat-item.selected{border-color:var(--pink);background:var(--pink-lt)}
+.cat-item .emoji{font-size:26px;display:block;margin-bottom:2px}
+
+.btn{
+  display:block;width:100%;padding:14px;border:none;border-radius:var(--radius-sm);
+  font-size:16px;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;
+  background:linear-gradient(135deg,#FF7AA5,#C9A7EB);color:#fff;
+  box-shadow:0 4px 16px rgba(200,140,180,.25);
+  letter-spacing:1px;
+}
+.btn:active{transform:scale(.97)}
+
+/* ── List ── */
+.tx-list{gap:10px;display:flex;flex-direction:column}
+.tx-item{
+  background:var(--card);border-radius:var(--radius-sm);padding:14px 16px;
+  display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);
+}
+.tx-item .tx-emoji{font-size:28px;width:40px;text-align:center;flex-shrink:0}
+.tx-item .tx-info{flex:1;min-width:0}
+.tx-item .tx-cat{font-size:14px;font-weight:600}
+.tx-item .tx-note{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx-item .tx-amount{font-size:16px;font-weight:700;flex-shrink:0}
+.tx-item .tx-amount.exp{color:#FF7AA5}
+.tx-item .tx-amount.inc{color:#52B788}
+.tx-item .tx-date{font-size:11px;color:var(--text2)}
+.tx-item .tx-del{
+  width:28px;height:28px;border-radius:50%;border:none;background:var(--pink-lt);
+  color:var(--pink);font-size:14px;cursor:pointer;flex-shrink:0;display:flex;
+  align-items:center;justify-content:center;
+}
+
+/* ── Stats ── */
+.stat-card{
+  background:var(--card);border-radius:var(--radius);padding:18px;
+  margin-bottom:14px;box-shadow:var(--shadow);
+}
+.stat-card h3{font-size:14px;font-weight:700;margin-bottom:14px;color:var(--text)}
+.stat-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.stat-bar-row .bar-label{font-size:13px;width:60px;text-align:right;flex-shrink:0}
+.stat-bar-row .bar-label emoji{font-size:16px}
+.stat-bar-row .bar-track{flex:1;height:20px;background:var(--border);border-radius:10px;overflow:hidden}
+.stat-bar-row .bar-fill{height:100%;border-radius:10px;transition:width .4s ease}
+.stat-bar-row .bar-val{font-size:12px;color:var(--text2);width:70px;flex-shrink:0}
+
+.empty-state{text-align:center;padding:40px 20px;color:var(--text2)}
+.empty-state .emoji{font-size:48px;margin-bottom:8px}
+
+/* ── Month Nav ── */
+.month-nav{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px}
+.month-nav button{background:var(--card);border:2px solid var(--border);border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text)}
+.month-nav span{font-size:16px;font-weight:700;min-width:100px;text-align:center}
+
+/* ── Settings ── */
+.setting-group{background:var(--card);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;box-shadow:var(--shadow)}
+.setting-group h3{font-size:14px;font-weight:700;margin-bottom:10px;color:var(--text)}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.setting-row:last-child{border-bottom:none}
+.setting-row label{font-size:14px}
+.setting-row .val{font-size:13px;color:var(--text2)}
+.btn-sm{padding:8px 18px;border:none;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-danger{background:var(--pink-lt);color:var(--pink)}
+.btn-outline{background:transparent;border:2px solid var(--border);color:var(--text2)}
+</style>
+</head>
+<body>
+
+<header class="header"><h1>🐷 小荷包</h1><div class="sub">可可爱爱 · 轻松记账</div></header>
+
+<!-- ── Tab Bar ── -->
+<nav class="tabs">
+  <div class="tab active" data-page="record"><span class="icon">✏️</span>记一笔</div>
+  <div class="tab" data-page="list"><span class="icon">📋</span>账单</div>
+  <div class="tab" data-page="stats"><span class="icon">📊</span>统计</div>
+  <div class="tab" data-page="settings"><span class="icon">⚙️</span>设置</div>
+</nav>
+
+<!-- ── Page: Record ── -->
+<div class="page active" id="page-record">
+  <div class="balance-card" id="balanceMini">
+    <div class="label">本月余额</div>
+    <div class="amount" id="balAmount">¥0.00</div>
+    <div class="row">
+      <div class="item"><div class="val" id="balIncome">¥0.00</div><div class="lbl">收入</div></div>
+      <div class="item"><div class="val" id="balExpense">¥0.00</div><div class="lbl">支出</div></div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h3>🌸 记一笔</h3>
+    <div class="form-row">
+      <label>类型</label>
+      <div class="type-toggle" style="flex:1">
+        <div class="type-btn exp active" data-type="expense" onclick="setType('expense')">💸 支出</div>
+        <div class="type-btn inc" data-type="income" onclick="setType('income')">💰 收入</div>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>金额</label>
+      <input type="number" id="inpAmount" placeholder="0.00" min="0.01" step="0.01" inputmode="decimal">
+    </div>
+    <div class="form-row">
+      <label>分类</label>
+      <div class="cat-grid" id="catGrid" style="flex:1"></div>
+    </div>
+    <div class="form-row">
+      <label>备注</label>
+      <input type="text" id="inpNote" placeholder="写点什么吧..." maxlength="30">
+    </div>
+    <div class="form-row">
+      <label>日期</label>
+      <input type="date" id="inpDate">
+    </div>
+    <button class="btn" onclick="addTx()">💾 保存记录</button>
+  </div>
+</div>
+
+<!-- ── Page: List ── -->
+<div class="page" id="page-list">
+  <div class="month-nav">
+    <button onclick="prevMonth()">◀</button>
+    <span id="listMonth">2026-06</span>
+    <button onclick="nextMonth()">▶</button>
+  </div>
+  <div class="balance-card" id="listBalance">
+    <div class="label">月度收支</div>
+    <div class="amount" id="listBal">¥0.00</div>
+    <div class="row">
+      <div class="item"><div class="val" id="listInc">¥0.00</div><div class="lbl">收入</div></div>
+      <div class="item"><div class="val" id="listExp">¥0.00</div><div class="lbl">支出</div></div>
+    </div>
+  </div>
+  <div class="tx-list" id="txList"></div>
+  <div class="empty-state" id="emptyList"><div class="emoji">🐾</div>还没有记录呢，快去记一笔吧~</div>
+</div>
+
+<!-- ── Page: Stats ── -->
+<div class="page" id="page-stats">
+  <div class="month-nav">
+    <button onclick="prevStatMonth()">◀</button>
+    <span id="statMonth">2026-06</span>
+    <button onclick="nextStatMonth()">▶</button>
+  </div>
+  <div class="stat-card" id="statSummary"></div>
+  <div class="stat-card">
+    <h3>📂 支出分类排行</h3>
+    <div id="statBars"></div>
+  </div>
+</div>
+
+<!-- ── Page: Settings ── -->
+<div class="page" id="page-settings">
+  <div class="setting-group">
+    <h3>📦 数据管理</h3>
+    <div class="setting-row">
+      <label>当前记录数</label><span class="val" id="setCount">0 条</span>
+    </div>
+    <div class="setting-row">
+      <button class="btn-sm btn-outline" onclick="exportData()">📤 导出数据</button>
+    </div>
+    <div class="setting-row">
+      <button class="btn-sm btn-outline" onclick="importData()">📥 导入数据</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="doImport(event)">
+    </div>
+    <div class="setting-row">
+      <button class="btn-sm btn-danger" onclick="clearAll()">🗑 清空全部数据</button>
+    </div>
+  </div>
+  <div class="setting-group">
+    <h3>ℹ️ 关于</h3>
+    <div class="setting-row"><label>版本</label><span class="val">1.0.0</span></div>
+    <div class="setting-row"><label>添加到桌面</label><span class="val">Safari → 分享 → 添加到主屏幕</span></div>
+  </div>
+</div>
+
+<script>
+// ── Categories ──
+const EXPENSE_CATS = [
+  {e:'🍔',n:'餐饮'},{e:'🚗',n:'交通'},{e:'🛒',n:'购物'},{e:'🎮',n:'娱乐'},
+  {e:'💊',n:'健康'},{e:'📚',n:'学习'},{e:'🏠',n:'住房'},{e:'👗',n:'服饰'},
+  {e:'💄',n:'美妆'},{e:'📱',n:'数码'}
+];
+const INCOME_CATS = [
+  {e:'💰',n:'工资'},{e:'🎁',n:'红包'},{e:'📈',n:'理财'},{e:'💼',n:'兼职'},
+  {e:'🏦',n:'报销'},{e:'💝',n:'礼物'},{e:'🔙',n:'退款'},{e:'📝',n:'其他'}
+];
+
+// ── State ──
+const STORAGE_KEY = 'pocket_account_data';
+let txType = 'expense';
+let selectedCat = EXPENSE_CATS[0];
+let transactions = [];
+let listViewMonth = '';
+let statViewMonth = '';
+
+function load(){ try{ const d=JSON.parse(localStorage.getItem(STORAGE_KEY)); if(Array.isArray(d))transactions=d; }catch(e){} }
+function save(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(transactions)); }
+
+// ── UI helpers ──
+function $id(id){ return document.getElementById(id); }
+function fmt(n){ return '¥'+Number(n).toFixed(2); }
+function ym(d){ return d.substring(0,7); }
+
+function nowYM(){
+  const d=new Date(); return d.getFullYear()+'-'+(String(d.getMonth()+1).padStart(2,'0'));
+}
+
+// ── Category grid ──
+function renderCats(){
+  const cats = txType === 'expense' ? EXPENSE_CATS : INCOME_CATS;
+  if(!cats.includes(selectedCat)) selectedCat = cats[0];
+  const g = $id('catGrid');
+  g.innerHTML = cats.map(c => {
+    const sel = selectedCat.n === c.n ? ' selected' : '';
+    return `<div class="cat-item${sel}" onclick="pickCat('${c.e}','${c.n}')"><span class="emoji">${c.e}</span>${c.n}</div>`;
+  }).join('');
+}
+
+function setType(t){
+  txType = t;
+  selectedCat = (t==='expense'?EXPENSE_CATS:INCOME_CATS)[0];
+  document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.type-btn.'+(t==='expense'?'exp':'inc')).classList.add('active');
+  renderCats();
+}
+
+function pickCat(emoji,name){
+  selectedCat = {e:emoji, n:name};
+  renderCats();
+}
+
+// ── Add transaction ──
+function addTx(){
+  const amt = parseFloat($id('inpAmount').value);
+  if(isNaN(amt)||amt<=0){ alert('请输入有效的金额哦~'); return; }
+  const note = $id('inpNote').value.trim() || selectedCat.n;
+  const date = $id('inpDate').value || new Date().toISOString().substring(0,10);
+  const tx = {
+    id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+    type:txType,cat:selectedCat,amount:Math.round(amt*100)/100,
+    note:note,date:date,createdAt:Date.now()
+  };
+  transactions.unshift(tx);
+  save();
+  $id('inpAmount').value='';
+  $id('inpNote').value='';
+  refreshAll();
+}
+
+// ── Delete ──
+function delTx(id){
+  if(!confirm('确定删除这条记录吗？')) return;
+  transactions = transactions.filter(t=>t.id!==id);
+  save(); refreshAll();
+}
+
+// ── Monthly calc ──
+function calcMonth(month){
+  const txs = transactions.filter(t=>t.date.startsWith(month));
+  let income=0,expense=0;
+  const byCat={};
+  txs.forEach(t=>{
+    if(t.type==='income')income+=t.amount;
+    else expense+=t.amount;
+    const k=t.type+':'+t.cat.n;
+    if(!byCat[k])byCat[k]={cat:t.cat,type:t.type,total:0};
+    byCat[k].total+=t.amount;
+  });
+  return {txs,income,expense,balance:income-expense,byCat};
+}
+
+// ── Render all ──
+function refreshAll(){
+  if(!listViewMonth)listViewMonth=nowYM();
+  if(!statViewMonth)statViewMonth=nowYM();
+  // Set date input
+  if(!$id('inpDate').value)$id('inpDate').value=new Date().toISOString().substring(0,10);
+  renderCats();
+  renderRecordBalance();
+  renderList();
+  renderStats();
+  $id('setCount').textContent = transactions.length+' 条';
+}
+
+function renderRecordBalance(){
+  const m = calcMonth(nowYM());
+  $id('balAmount').textContent = fmt(m.balance);
+  $id('balIncome').textContent = fmt(m.income);
+  $id('balExpense').textContent = fmt(m.expense);
+}
+
+// ── List page ──
+function renderList(){
+  $id('listMonth').textContent = listViewMonth;
+  const m = calcMonth(listViewMonth);
+  $id('listBal').textContent = fmt(m.balance);
+  $id('listInc').textContent = fmt(m.income);
+  $id('listExp').textContent = fmt(m.expense);
+
+  const container = $id('txList');
+  const empty = $id('emptyList');
+  if(m.txs.length===0){ container.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+
+  container.innerHTML = m.txs.map(t=>{
+    const cls = t.type==='expense'?'exp':'inc';
+    const sign = t.type==='expense'?'-':'+';
+    const d = t.date.slice(5);
+    return `<div class="tx-item">
+      <div class="tx-emoji">${t.cat.e}</div>
+      <div class="tx-info">
+        <div class="tx-cat">${t.cat.n}</div>
+        <div class="tx-note">${t.note}</div>
+      </div>
+      <div>
+        <div class="tx-amount ${cls}">${sign}${fmt(t.amount)}</div>
+        <div class="tx-date">${d}</div>
+      </div>
+      <button class="tx-del" onclick="delTx('${t.id}')">×</button>
+    </div>`;
+  }).join('');
+}
+
+function prevMonth(){ listViewMonth = shiftMonth(listViewMonth,-1); renderList(); }
+function nextMonth(){ listViewMonth = shiftMonth(listViewMonth,1); renderList(); }
+function prevStatMonth(){ statViewMonth = shiftMonth(statViewMonth,-1); renderStats(); }
+function nextStatMonth(){ statViewMonth = shiftMonth(statViewMonth,1); renderStats(); }
+
+function shiftMonth(ym,delta){
+  const [y,m]=ym.split('-').map(Number);
+  const d = new Date(y,m-1+delta,1);
+  return d.getFullYear()+'-'+(String(d.getMonth()+1).padStart(2,'0'));
+}
+
+// ── Stats page ──
+function renderStats(){
+  $id('statMonth').textContent = statViewMonth;
+  const m = calcMonth(statViewMonth);
+  // Summary
+  $id('statSummary').innerHTML = `
+    <h3>📋 月度概览</h3>
+    <div style="display:flex;gap:16px;text-align:center">
+      <div style="flex:1;background:var(--mint-lt);border-radius:12px;padding:12px">
+        <div style="font-size:20px;font-weight:800;color:#52B788">${fmt(m.income)}</div>
+        <div style="font-size:11px;color:var(--text2)">收入</div>
+      </div>
+      <div style="flex:1;background:var(--pink-lt);border-radius:12px;padding:12px">
+        <div style="font-size:20px;font-weight:800;color:#FF7AA5">${fmt(m.expense)}</div>
+        <div style="font-size:11px;color:var(--text2)">支出</div>
+      </div>
+      <div style="flex:1;background:var(--purple-lt);border-radius:12px;padding:12px">
+        <div style="font-size:20px;font-weight:800;color:#8B6FC0">${fmt(m.balance)}</div>
+        <div style="font-size:11px;color:var(--text2)">结余</div>
+      </div>
+    </div>
+  `;
+
+  // Category bars
+  const expenseCats = Object.values(m.byCat).filter(c=>c.type==='expense').sort((a,b)=>b.total-a.total);
+  const maxVal = expenseCats.length>0 ? expenseCats[0].total : 1;
+  const colors = ['#FF7AA5','#FF9CBA','#FFB7C5','#C9A7EB','#8ECAE6','#95D5B2','#FFE0A0','#FFD1DC'];
+  $id('statBars').innerHTML = expenseCats.length===0
+    ? '<div class="empty-state" style="padding:16px"><div style="font-size:32px">🌸</div>本月没有支出哦~</div>'
+    : expenseCats.map((c,i)=>{
+      const pct = Math.round(c.total/maxVal*100);
+      return `<div class="stat-bar-row">
+        <div class="bar-label">${c.cat.e} ${c.cat.n}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${colors[i%colors.length]}"></div></div>
+        <div class="bar-val">${fmt(c.total)}</div>
+      </div>`;
+    }).join('');
+}
+
+// ── Tab switching ──
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click',function(){
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    this.classList.add('active');
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    $id('page-'+this.dataset.page).classList.add('active');
+    refreshAll();
+  });
+});
+
+// ── Export / Import ──
+function exportData(){
+  const blob=new Blob([JSON.stringify(transactions,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='pocket-backup-'+nowYM()+'.json';a.click();
+}
+function importData(){ $id('importFile').click(); }
+function doImport(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(){
+    try{
+      const d=JSON.parse(reader.result);
+      if(!Array.isArray(d))throw new Error();
+      if(!confirm('将导入 '+d.length+' 条记录，会合并到现有数据中，确定吗？'))return;
+      const ids=new Set(transactions.map(t=>t.id));
+      d.forEach(t=>{if(!ids.has(t.id)){transactions.push(t);ids.add(t.id)}});
+      save();refreshAll();
+    }catch{ alert('文件格式不正确哦~'); }
+  };
+  reader.readAsText(file);
+}
+function clearAll(){
+  if(!confirm('确定要清空全部记账数据吗？此操作不可恢复！'))return;
+  if(!confirm('再次确认：真的要删除所有记录吗？'))return;
+  transactions=[];save();refreshAll();
+}
+
+// ── Init ──
+load();
+if(!listViewMonth)listViewMonth=nowYM();
+if(!statViewMonth)statViewMonth=nowYM();
+refreshAll();
+
+</script>
+</body>
+</html>
